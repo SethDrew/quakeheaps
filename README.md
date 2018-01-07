@@ -3,7 +3,7 @@
 ## Requirements:
 python3
 
-### Usage
+## Usage
 ```
 python gen.py 50
 python http.server 8000
