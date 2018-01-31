@@ -13,11 +13,11 @@
       stroke-width: 1.5px;
     }
  
-         
+
     .node text {            
       font-size: 12px;
     }
- 
+
     path.link {
       fill: none;
       stroke: #ccc;
@@ -29,23 +29,11 @@
     </style>
     <script>
       $.getJSON("tree_data.json", function(json) {
-        for(var i = 0; i < json['all'].length; i++){
-          var treeheight = json['all'][i].height;
-          $('body').append('<div id=root_'+i+'></div>');    
-          height = treeheight * 80
-          width = Math.pow(2, treeheight) * 30 + 50
-
-          bst = d3.bst(d3, "#root_"+i, width, height)
+          bst = d3.bst(d3, "#qh");
           //body can be an id tag like "#canvas" or a 
           //class, such as, ".canvases". 
-        
-          bst.make(json['all'][i])
-          // $('.div').each(function(){
-          //   var inner=this.find('svg')
+          bst.make(json['all']);
 
-          // })
-         
-        }
       });
       
       
@@ -54,6 +42,6 @@
 
 </head>
 <body>
-  
+  <div id="qh"> </div>
 </body>
 </html>
