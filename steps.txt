@@ -1,0 +1,6 @@
+Understand BST.js
+ -- get collapsing working on every tree
+
+Name every link 
+keep dictionary of names to links
+
