@@ -23,22 +23,77 @@
       stroke: #ccc;
       stroke-width: 1.5px;
     }
-    .div {
+    .heap {
      display: inline-block;
     }
     </style>
-    <script>
-
-          var tree = {{tree_json | tojson | safe}}
-          qh = bst(d3, "#qh");
-          //body can be an id tag like "#canvas" or a 
-          //class, such as, ".canvases". 
-          qh.make(tree['all']);
-      
-    </script>
+  
 
 </head>
 <body>
-  <div id="qh"> </div>
+  
+<div id="option">
+    Add Nodes:
+    <input name="addnum" 
+           type="number" 
+           id="addnum"
+           value="1" >
+           <input name="updatebutton"
+           type="button"
+           value="Update"
+           onclick="addNodes($('#addnum').val())">
+    <input name="extract"
+           type="button"
+           value="Extract Min"
+           onclick="extractMin()">
+</div>
+<div id="qh"></div>
+
+    <script>
+        var mktree = function(tree){
+          console.log(tree);
+            for(var rootnum = 0; rootnum < tree.length; rootnum++){
+              var $div = $('<div />').appendTo('#qh');
+              $div.attr('id', 'qh'+rootnum);
+              $div.attr('class', 'heap')
+
+              qh = d3.bst(d3, "#qh"+rootnum);
+              qh.make(tree[rootnum]);
+
+            }
+          }
+        $(document).ready(function(){
+          var tree = {{tree_json | tojson | safe}}['all']
+          mktree(tree);
+        });
+
+      
+    </script>
+    <script>  
+    function addNodes(num) {
+      $.getJSON("/update?num="+num, function(data, err){
+        if(data){
+          $("#qh").html("");
+          mktree(data);
+        }
+        else{
+          console.log(err);
+        }
+      });
+     
+    }
+    function extractMin(){
+        $.getJSON("/extract", function(data, err){
+        if(data){
+          $("#qh").html("Extracted min "+data['min']+" and rebalanced qh via merge.");
+          mktree(data['all']);
+        }
+        else{
+          console.log(err);
+        }
+      });
+    }
+    </script>
 </body>
+
 </html>

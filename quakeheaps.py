@@ -1,25 +1,25 @@
 """ This function is O(N), must be O(1). Rethink tree repr to allow cut in const time
 """
 
+#needs to be an object so that it can be copied
+class Value():
+    def __init__(self, value, ancestors):
+        self.value = value
+        self.ancestors = ancestors #IMPORTANT IMPL DETAIL: this goes here so it can be copied and changed on o(1) after every merge for the whole path.
+
+    def __lt__(self, other):
+        return self.value < other.value
+    def set(self, value):
+        self.value = value
+
 class Node():
-
-    #needs to be an object so that it can be copied
-    class Value():
-        def __init__(self, value, ancestors):
-            self.value = value
-            self.ancestors = ancestors #IMPORTANT IMPL DETAIL: this goes here so it can be copied and changed on o(1) after every merge for the whole path.
-
-        def __lt__(self, other):
-            return self.value < other.value
-        def set(self, value):
-            self.value = value
 
     
     def __init__(self, value, children, ancestors = [], levels = []):
-        if isinstance(value, self.Value):
+        if isinstance(value, Value):
             self.value = value
         else:
-            self.value = self.Value(value, ancestors)
+            self.value = Value(value, ancestors)
 
         self.children = children #array to support one or two children
         self.height = -1         #tree height. Only used at root.
@@ -119,7 +119,7 @@ class QuakeHeap():
                 # print("After delete of {}: Making new tree with root: {} and height: {}".format(node, newroot, newroot.height))
         self._link_trees()
         self._quake()
-        return node
+        return node.value.value
     def _quake(self):
         for l1, l2 in zip(self.levels, self.levels[1:]):
             if l1 * self.alpha < l2:
@@ -206,8 +206,12 @@ class QuakeHeap():
             print("-------------------")
             for node in tree.all_descendents():
                 print(node, node.value.value)
-    def dump(self,file):
+    def dumpf(self,file):
         import json
+        qh = self.dump()
+        with open(file, 'w') as f:
+            f.write(json.dumps(qh, indent=2))
+    def dump(self):
         qh = []
         for tree in self.trees:
             qh.append({
@@ -215,9 +219,9 @@ class QuakeHeap():
                     "height":tree.height,
                     "children":self._rec_dump(tree)  #recurse on that node to finish all it's children
                     }) 
+        return {"all":qh}
                     
-        with open(file, 'w') as f:
-            f.write(json.dumps({"all":qh}, indent=2))
+
     def _rec_dump(self, parent):
         nodes = []
         for child in parent.get_children():

@@ -1,6 +1,10 @@
 Understand BST.js
- -- get collapsing working on every tree
 
+
+- add a node
+- remove min
+    
+{# 
 Name every link 
 keep dictionary of names to links
-
+ #}
