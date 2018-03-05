@@ -90,12 +90,15 @@ class QuakeHeap():
         height = len(ancestors)
         if height > 0:
             parent = ancestors[0]
-            if parent.value is not node.value: #if the node is not the lowest value in the tree (if it was, parent.value = node.value)
-                parent.remove_child(node) 
-                node.remove_ancestor(parent)
-                self._add_tree(node, height)  #we're cutting: we need to change height param
+            if parent.value is not node.value: #if the node is not a root of a tree
+                newroot = parent.off_child()
+                parent.remove_child(newroot)
+                newroot.remove_ancestor(parent) 
+                self._add_tree(newroot, len(newroot.get_ancestors()) + 1)  #we're cutting: we need to change height param
+                newroot.value.set(k)  #node is lowest value in tree, just set it to the value we want
+                return newroot
 
-        node.value.set(k)          #node is lowest value in tree, just set it to the value we want
+        node.value.set(k)  #node is lowest value in tree, just set it to the value we want
         return node
 
     def extract_min(self):
@@ -103,6 +106,7 @@ class QuakeHeap():
         min_node = self._find_min_node()
         for i in range(min_node.height):
             self.levels[i] -= 1
+
         return self._delete(min_node)
 
     def min(self):
@@ -110,24 +114,60 @@ class QuakeHeap():
     
     def _delete(self, node): # Spawns h new trees where h is the height to the bottom from the node we are deleting. We also use this time to link the trees 
         self.trees.remove(node) #IMPL DETAIL: Delete never called on something that's not a root. Delete_min is only delete op that QH support
-        for ancestor in node.get_ancestors():
-            newroot = ancestor.off_child() #get child that is not a copy and make a new tree from it
+        ancestors = node.get_ancestors()
+        for i in range(len(ancestors)-1, -1, -1):
+            newroot = ancestors[i].off_child() #get child that is not a copy and make a new tree from it
             if(newroot):
-                ancestor.remove_child(newroot)
-                newroot.remove_ancestor(ancestor)
-                self._add_tree(newroot, node.height - 1)
+                ancestors[i].remove_child(newroot)
+                newroot.remove_ancestor(ancestors[i])
+                self._add_tree(newroot, len(newroot.get_ancestors()) + 1) #adjust tree height based on what level removed from node
                 # print("After delete of {}: Making new tree with root: {} and height: {}".format(node, newroot, newroot.height))
+        #self.run_quake()
         self._link_trees()
-        self._quake()
         return node.value.value
-    def _quake(self):
-        for l1, l2 in zip(self.levels, self.levels[1:]):
-            if l1 * self.alpha < l2:
-                print (self.levels)
+    
+    def _cut_above(self, level, node, curlevel, newtrees):
+        if curlevel == level: #at l1 nodes
+            newtrees.append(node)
+
+        elif curlevel > level: #still above l1, recurse lower
+            for child in node.children:
+
+                child.remove_ancestor(node)
+                self._cut_above(level, child, curlevel - 1, newtrees)
+
+    def run_quake(self): #this is for vis to have control over quake
+        self._quake(self.quake_test()) 
+
+    def quake_test(self):
+        for i in range(len(self.levels) - 1):
+            l1 = self.levels[i]
+            l2 = self.levels[i+1]
+            if l1 * self.alpha < l2 and l2 != 0: #quake condition 
+                print("Quake condition on levels = {}".format(self.levels))
+                return i+1
+
+        return -1
+
+    def _quake(self, chop_level):
+        if chop_level > -1: 
+            newtrees = []
+            print("QUAAAAKEEEE on level {}".format(chop_level))
+            self.levels = self.levels[:chop_level]
+            print "new levels after slice: {}".format(self.levels)
+            for tree in self.trees:
+                print("considering root of tree {} with height {}".format(tree.value.value, tree.height)) 
+                if tree.height > chop_level: 
+                    self._cut_above(chop_level - 1, tree, tree.height -1, newtrees) #put its children back
+            self.trees = newtrees
+        else:
+            pass
+
     def _link_trees(self):
         # height_table = [None] * self.levels[-1] #number of nodes at leaf level should be big enough. improvement todo
         height_table = [None] * 1000
         to_link = [t for t in self.trees]
+
         while len(to_link) > 0:
             tree = to_link.pop()
             # print ("looking at {} with height {}".format(tree, tree.height))
@@ -163,11 +203,10 @@ class QuakeHeap():
         newroot = Node(winner.value, [winner, loser]) #value copy of winner, children of both competitors
 
         newroot.height = winner.height+1
-        if len(self.levels) == t1.height:
-            self.levels.append(0);
-        self.levels[t1.height] += 1
 
-        # print("levels = {}".format(self.levels))
+        if len(self.levels) + 1 == newroot.height:
+            self.levels.append(0);
+        self.levels[newroot.height-1] += 1
 
         #height left undefined for non roots
         

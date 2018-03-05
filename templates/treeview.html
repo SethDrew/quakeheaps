@@ -37,16 +37,19 @@
     <input name="addnum" 
            type="number" 
            id="addnum"
-           value="1" >
+           value="15" >
            <input name="updatebutton"
            type="button"
            value="Update"
            onclick="addNodes($('#addnum').val())">
+           <br>
+           <br>
     <input name="extract"
            type="button"
            value="Extract Min"
            onclick="extractMin()">
 </div>
+<div id="info"></div>
 <div id="qh"></div>
 
     <script>
@@ -80,18 +83,49 @@
           console.log(err);
         }
       });
-     
     }
     function extractMin(){
         $.getJSON("/extract", function(data, err){
         if(data){
-          $("#qh").html("Extracted min "+data['min']+" and rebalanced qh via merge.");
+          $("#info").html("Extracted min "+data['min']+" and rebalanced qh via merge.<br>");
+          if(data['quake_level'] > -1){
+            var quakebutton = $('<input type="button" value="Quake" onclick="quake()"/>');
+
+            $("#info").append('Quake condition satisfied above level '+data['quake_level'] +' From the bottom. Press quake to cut above this level <br>')
+            $("#info").append(quakebutton)
+
+          }
+          $("#qh").html("");
           mktree(data['all']);
         }
         else{
           console.log(err);
         }
       });
+    }
+    function decreaseKey(d){
+    $.getJSON("/decrease?node="+d.name, function(data, err){
+                    if(data){
+                      $("#info").html("Decreased key "+d.name+" to "+data['newkey']);
+                      $("#qh").html("");
+                      mktree(data['all']);
+                    }
+                    else{
+                      console.log(err);
+                    }
+                }); 
+    }
+    function quake(){
+      $.getJSON("/quake", function(data, err){
+        if(data){
+          $("#info").html("Cut all trees above quake condition violation above level "+data['quake_level'] + " from the bottom");
+          $("#qh").html("");
+          mktree(data['all']);
+        }
+        else{
+          console.log(err);
+        }
+      }); 
     }
     </script>
 </body>

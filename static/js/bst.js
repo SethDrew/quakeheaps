@@ -59,8 +59,10 @@ d3.bst = function (d3, canvasID) {
             .attr("transform", function(d) { 
                 return "translate(" + source.x0 + "," + source.y0 + ")"; 
             })
-            .on("click", function(d) {  console.log(d); 
-                // toggle(d); update(d);
+            .on("click", function(d) {  
+                console.log("Decreasing key " + d.name); 
+                decreaseKey(d);
+                    // toggle(d); update(d);
             });
     
         nodeEnter.append("rect")

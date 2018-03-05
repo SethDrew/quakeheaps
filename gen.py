@@ -32,10 +32,10 @@ def readheap():
 
 def create_heap(num):
     q = QuakeHeap()
-    values = set()
+    values = {}
     for i in random.sample(range(1, 1 + num*10), num):
-        q.insert(i)
-        values.add(i)
+        node = q.insert(i)
+        values.setdefault(i, node)
     writeheap(q, values)
    
     return q.dump()
@@ -43,24 +43,49 @@ def create_heap(num):
 def update_heap(num):
     q, values = readheap()
 
-    #exclude values from random sample
-    for i in random.sample(set(range(1, 1+ num + sum(q.levels))) - values, num):
-        q.insert(i)
-        values.add(i)
+    insert_range = set(range(10 * (1+ num + q.levels[0]))) 
+        # (number of new nodes to add + total leaves in qh) (* 10 for good large range)
+    used_keys = set(values.keys()) 
+    sample_range = insert_range - used_keys #set minus
+
+    for i in random.sample(sample_range, num):
+        node = q.insert(i)
+        values.setdefault(i, node)
 
     writeheap(q, values)
-    print(q.dump())
 
     return q.dump()
+
+def decrease_key(node_val):
+    q, values = readheap()
+
+    #for now just choose smallest possible key we can.
+    used_keys = set(values.keys())
+    keyrange = set(range(node_val)) - used_keys
+    k = random.sample(keyrange, 1)[0] 
+
+    q.decrease_key(values[node_val], k)
+    values[k] = values.pop(node_val) #change dict key pointing to this node
+    writeheap(q, values)
+
+    return k, q.dump()
+
 
 def extract_min():
     q, values = readheap()
 
     m = q.extract_min()
-    values.remove(m)
+    values.pop('m', None)
 
     writeheap(q, values)
 
-    return m, q.dump()
+    return m, q.dump(), q.quake_test()
+def run_quake():
+    q, values = readheap()
+    quake_level = q.quake_test()
+    assert quake_level > -1
 
+    q.run_quake()
 
+    writeheap(q, values)
+    return q.dump(), quake_level
