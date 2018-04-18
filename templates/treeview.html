@@ -48,6 +48,11 @@
            type="button"
            value="Extract Min"
            onclick="extractMin()">
+    <input name="undo"
+           type="button"
+           value="Undo"
+           id="undobutton"
+           onclick="undo()">
 </div>
 <div id="info"></div>
 <div id="qh"></div>
@@ -84,6 +89,24 @@
         }
       });
     }
+    function undo(){
+      $.getJSON("/undo", function(data, err){
+        if(data){
+          $("#info").html("Undid last operation");
+          $("#qh").html("");
+          $("#undobutton").hide()
+          mktree(data['all']);
+        }
+        else{
+          console.log(err);
+        }
+      });
+    }
+    function housekeeping(data){ // sorry i know its a dumb name for a function
+        $("#undobutton").show()
+        $("#qh").html("");
+        mktree(data['all']);
+    }
     function extractMin(){
         $.getJSON("/extract", function(data, err){
         if(data){
@@ -95,8 +118,7 @@
             $("#info").append(quakebutton)
 
           }
-          $("#qh").html("");
-          mktree(data['all']);
+          housekeeping(data);
         }
         else{
           console.log(err);
@@ -107,8 +129,7 @@
     $.getJSON("/decrease?node="+d.name, function(data, err){
                     if(data){
                       $("#info").html("Decreased key "+d.name+" to "+data['newkey']);
-                      $("#qh").html("");
-                      mktree(data['all']);
+                      housekeeping(data);
                     }
                     else{
                       console.log(err);
@@ -119,8 +140,7 @@
       $.getJSON("/quake", function(data, err){
         if(data){
           $("#info").html("Cut all trees above quake condition violation above level "+data['quake_level'] + " from the bottom");
-          $("#qh").html("");
-          mktree(data['all']);
+         housekeeping(data);
         }
         else{
           console.log(err);

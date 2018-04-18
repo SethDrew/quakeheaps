@@ -3,7 +3,7 @@ sys.path.append("lib/")
 from flask import Flask
 from flask import render_template, request, jsonify
 
-from gen import create_heap, update_heap, extract_min, decrease_key, run_quake
+from gen import create_heap, update_heap, revert_heap, extract_min, decrease_key, run_quake
 
 
 import json
@@ -40,6 +40,11 @@ def decrease():
     node = int(request.args.get('node'))
     k, dump = decrease_key(node)
     return jsonify({"newkey": k, "all":dump['all']})
+
+@app.route("/undo")
+def undo():    
+    return jsonify(revert_heap())
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

@@ -77,7 +77,7 @@ Notes: node.remove_child() deletes all neccessary pointers from top of tree to c
 
 
 class QuakeHeap():
-    alpha = .75
+    alpha = .5
     def __init__(self):
         self.trees = []
         self.levels = [0]
@@ -159,6 +159,8 @@ class QuakeHeap():
                 print("considering root of tree {} with height {}".format(tree.value.value, tree.height)) 
                 if tree.height > chop_level: 
                     self._cut_above(chop_level - 1, tree, tree.height -1, newtrees) #put its children back
+                else:
+                    newtrees.append(tree)
             self.trees = newtrees
         else:
             pass

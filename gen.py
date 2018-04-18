@@ -22,12 +22,22 @@ import cPickle as pickle
 
 
 def writeheap(q, values):
+    with open("qh.pickle", "r") as f1:
+        with open("qh_old.pickle", "wb") as f2:
+            for line in f1:
+                f2.write(line)
+
     with open("qh.pickle", 'wb') as f:
         pickle.dump((q, values), f)
 
 def readheap():
     with open("qh.pickle", "r") as f:
         return pickle.load(f)
+
+def read_oldheap():
+    with open("qh_old.pickle", "r") as f:
+        return pickle.load(f)
+
 
 
 def create_heap(num):
@@ -51,6 +61,13 @@ def update_heap(num):
     for i in random.sample(sample_range, num):
         node = q.insert(i)
         values.setdefault(i, node)
+
+    writeheap(q, values)
+
+    return q.dump()
+
+def revert_heap():
+    q, values = read_oldheap()
 
     writeheap(q, values)
 
@@ -89,3 +106,7 @@ def run_quake():
 
     writeheap(q, values)
     return q.dump(), quake_level
+
+
+
+

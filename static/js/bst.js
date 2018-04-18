@@ -33,7 +33,7 @@ d3.bst = function (d3, canvasID) {
     function update(source) {
 
 
-        var duration = 600;
+        var duration = 10;
     
         // Compute the new tree layout.
         var nodes = tree.nodes(rt).reverse();
@@ -116,7 +116,7 @@ d3.bst = function (d3, canvasID) {
         link.transition()
             .duration(duration)
             .attr("d", diagonal);
-    
+        
         // Transition exiting nodes to the parent's new position.
         link.exit().transition()
             .duration(duration)
