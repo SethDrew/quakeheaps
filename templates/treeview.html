@@ -31,8 +31,9 @@
 
 </head>
 <body>
-  
-<div id="option">
+  <div>
+<div id="option" style="width:50%">
+  <div style="width:50%">
     Add Nodes:
     <input name="addnum" 
            type="number" 
@@ -52,20 +53,42 @@
            type="button"
            value="Undo"
            id="undobutton"
-           onclick="undo()">
+           onclick="undo()"
+           style="display:none">
+
+    <input id="quakebutton"
+     type="button"
+      value="Quake"
+       style="display:none"
+        onclick="quake()">
+    <input id="decreasecontinuebutton"
+    type="button"
+    value="Continue Decrease"
+    style="display:none"
+    onclick="continueDecrease()">
+    <input id="extractcontinuebutton"
+    type="button"
+    value="Continue Extract"
+    style="display:none"
+    onclick="continueExtract()">
+  </div>
+    <div style="width:50%">Teaching Mode<input type="checkbox" id="teaching" value="Teaching Mode">
+    </div>
+    <input type="hidden" value="" id="tmpdata">
+</div>
 </div>
 <div id="info"></div>
+
 <div id="qh"></div>
 
     <script>
         var mktree = function(tree){
-          console.log(tree);
             for(var rootnum = 0; rootnum < tree.length; rootnum++){
               var $div = $('<div />').appendTo('#qh');
               $div.attr('id', 'qh'+rootnum);
               $div.attr('class', 'heap')
 
-              qh = d3.bst(d3, "#qh"+rootnum);
+              qh = d3.bst(d3, rootnum);
               qh.make(tree[rootnum]);
 
             }
@@ -77,7 +100,9 @@
 
       
     </script>
-    <script>  
+    <script> 
+
+
     function addNodes(num) {
       $.getJSON("/update?num="+num, function(data, err){
         if(data){
@@ -89,6 +114,9 @@
         }
       });
     }
+
+
+
     function undo(){
       $.getJSON("/undo", function(data, err){
         if(data){
@@ -108,45 +136,110 @@
         mktree(data['all']);
     }
     function extractMin(){
-        $.getJSON("/extract", function(data, err){
+      if($("#teaching").is(":checked")){
+        highlightExtract();
+        $("#extractcontinuebutton").show()
+      }
+      else{
+        continueExtract()
+      }
+
+    }
+    function highlightExtract(){
+      var node = d3.selectAll("g.node");
+      var links = d3.selectAll("path.link");
+      var min = 1000000;
+      node.each(function(d){
+        if(d.name < min){
+          min = d.name
+        }
+      });
+
+      links.filter(function(d){return d.source.name == min})
+          .style("stroke","red");
+      
+      node.filter(function(d){return d.name == min})
+          .style("stroke", "red");
+
+
+    }
+    function continueExtract(){
+       $.getJSON("/extract", function(data, err){
         if(data){
           $("#info").html("Extracted min "+data['min']+" and rebalanced qh via merge.<br>");
           if(data['quake_level'] > -1){
-            var quakebutton = $('<input type="button" value="Quake" onclick="quake()"/>');
 
             $("#info").append('Quake condition satisfied above level '+data['quake_level'] +' From the bottom. Press quake to cut above this level <br>')
-            $("#info").append(quakebutton)
+
+            if($("#teaching").is(":checked")){
+              highlightQuake(data['quake_level'])
+            }
+
+            $("#quakebutton").show()
 
           }
           housekeeping(data);
+          $("#extractcontinuebutton").hide()
+
         }
         else{
           console.log(err);
         }
       });
     }
-    function decreaseKey(d){
-    $.getJSON("/decrease?node="+d.name, function(data, err){
-                    if(data){
-                      $("#info").html("Decreased key "+d.name+" to "+data['newkey']);
-                      housekeeping(data);
-                    }
-                    else{
-                      console.log(err);
-                    }
-                }); 
+    function highlightQuake(level){
+      
+      var node = d3.selectAll("g.node");
+      var links = d3.selectAll("path.link");
+
+      links.filter(function(d){return d.source.height > level})
+          .style("stroke","red");
+      node.filter(function(d){ return d.height > level})
+          .each(function(d){console.log("height satisfied for"); console.log(d);}).style("stroke", "red");
+      
     }
+    function decreaseKey(d){
+    // Don't actually do anything until the user clicks continue
+      $("#tmpdata").val(d.name);
+
+      if($("#teaching").is(":checked")){
+        $("#decreasecontinuebutton").show()
+      }
+      else{
+        continueDecrease();
+      }
+    }
+
+     function continueDecrease(){
+      var name = $("#tmpdata").val()
+       $.getJSON("/decrease?node="+name, function(data, err){
+            if(data){
+              $("#info").html("Decreased key "+name+" to "+data['newkey']);
+
+              $("#decreasecontinuebutton").hide();
+              housekeeping(data);
+            }
+            else{
+              console.log(err);
+            }
+        }); 
+    }
+
+
     function quake(){
       $.getJSON("/quake", function(data, err){
         if(data){
           $("#info").html("Cut all trees above quake condition violation above level "+data['quake_level'] + " from the bottom");
          housekeeping(data);
+         $("#quakebutton").hide()
+
         }
         else{
           console.log(err);
         }
       }); 
     }
+
     </script>
 </body>
 

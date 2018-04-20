@@ -8,7 +8,7 @@
 // remove min
 
 
-d3.bst = function (d3, canvasID) {  
+d3.bst = function (d3, rootnum) {  
 
     //defaults 
     var mw = 0, mh = 50;
@@ -16,7 +16,8 @@ d3.bst = function (d3, canvasID) {
     var i = 0;
     var tree;
     var depthStep = 50;
-    var canvasID = canvasID; //canvasID must have hash like "#vis" or "#canvas;
+    var rootnum = rootnum;
+    var canvasID = "#qh"+rootnum; //canvasID must have hash like "#vis" or "#canvas;
 
 
     function toggle (d) {
@@ -43,7 +44,7 @@ d3.bst = function (d3, canvasID) {
         // console.log(nodes);
         // console.log(rt);
         // console.log("\n\n\n"); 
-        //always reference last tree that was made. super frusturating. "rt" points to the last tree's root.
+        // always reference last tree that was made. super frusturating. "rt" points to the last tree's root.
         // each time the d3.bst function is called, it overwrites the last one.
 
 
@@ -51,7 +52,7 @@ d3.bst = function (d3, canvasID) {
         nodes.forEach(function(d) { d.y = d.depth * depthStep; });
         // Update the nodes…
         var node = vis.selectAll("g.node")
-            .data(nodes, function(d) { return d.id || (d.id = ++i); });
+            .data(nodes, function(d) { return d.id || (d.id = rootnum + "_" +(++i)); }); // plus append converts to string
     
         // Enter any new nodes at the parent's previous position
         var nodeEnter = node.enter().append("g")
@@ -59,10 +60,13 @@ d3.bst = function (d3, canvasID) {
             .attr("transform", function(d) { 
                 return "translate(" + source.x0 + "," + source.y0 + ")"; 
             })
-            .on("click", function(d) {  
-                console.log("Decreasing key " + d.name); 
+            .on("click", function(d) {
+                node.filter(function(d0) {return d0.name == d.name}).style("stroke", "red");
+                while(d.parent && d.parent.name == d.name){
+                    d = d.parent;
+                }
+                d3.selectAll("#link_"+d.id).style("stroke", "red");
                 decreaseKey(d);
-                    // toggle(d); update(d);
             });
     
         nodeEnter.append("rect")
@@ -87,44 +91,29 @@ d3.bst = function (d3, canvasID) {
                 return d._children ? "lightsteelblue" : "#fff"; 
             });
     
-        // Transition exiting nodes to the parent's new position.
-        var nodeExit = node.exit().transition()
-            .duration(duration)
-            .attr("transform", function(d) { 
-                return "translate(" + source.x + "," + source.y + ")"; 
-            })
-            .remove();
+ 
     
         // Update the links…
         var link = vis.selectAll("path.link")
-            .data(tree.links(nodes), function(d) { 
-                return d.target.id; 
-            });
+            .data(tree.links(nodes), function(d) { return d.target.id });
     
         // Enter any new links at the parent's previous position.
         link.enter().insert("path", "g")
             .attr("class", "link")
+            .attr("id", function(d) {return "link_"+d.target.id})
             .attr("d", function(d) {
               var o = {x: source.x0, y: source.y0};
               return diagonal({source: o, target: o});
             })
             .transition()
             .duration(duration)
-            .attr("d", diagonal);
-    
+            .attr("d", diagonal)
+
         // Transition links to their new position.
         link.transition()
             .duration(duration)
             .attr("d", diagonal);
         
-        // Transition exiting nodes to the parent's new position.
-        link.exit().transition()
-            .duration(duration)
-            .attr("d", function(d) {
-              var o = {x: source.x, y: source.y};
-              return diagonal({source: o, target: o});
-            })
-            .remove();
     
         // Stash the old positions for transition.
         nodes.forEach(function(d) {
@@ -133,7 +122,6 @@ d3.bst = function (d3, canvasID) {
         });
     }
 
-    //boilerplate stuff
     var bst_obj = {
         make: function (data) {
                 var treeheight = data.height;
