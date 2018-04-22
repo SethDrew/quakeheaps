@@ -10,14 +10,21 @@ import json
 
 app = Flask(__name__)
 
-@app.route("/")
-def index():
+@app.route("/treeview")
+def treeview():
     # with open("./static/tree_data.json") as f:
     #     tree_json = json.load(f)
     # print(tree_json)
     tree_json = create_heap(0)
-
     return render_template("treeview.html", tree_json=tree_json)
+
+@app.route("/")
+def index():
+    return render_template("index.html");  
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html");
 
 @app.route("/update")
 def update():

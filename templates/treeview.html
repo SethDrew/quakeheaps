@@ -31,8 +31,35 @@
 
 </head>
 <body>
+  <link href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
+
+<!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">Welcome
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/contact">Contact</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/treeview">Vis</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
   <div>
-<div id="option" style="width:50%">
+    <div class="container" style="margin-top:100px">
+<div class="col-md-8" id="option" style="width:50%">
   <div style="width:50%">
     Add Nodes:
     <input name="addnum" 
@@ -43,6 +70,8 @@
            type="button"
            value="Update"
            onclick="addNodes($('#addnum').val())">
+           <div style="width:50%">Teaching Mode<input type="checkbox" id="teaching" value="Teaching Mode">
+    </div>
            <br>
            <br>
     <input name="extract"
@@ -72,14 +101,14 @@
     style="display:none"
     onclick="continueExtract()">
   </div>
-    <div style="width:50%">Teaching Mode<input type="checkbox" id="teaching" value="Teaching Mode">
-    </div>
+    
     <input type="hidden" value="" id="tmpdata">
 </div>
 </div>
-<div id="info"></div>
+<div class="col-md-8" id="info"></div>
 
-<div id="qh"></div>
+<div class="col-lg-12" id="qh"></div>
+</div>
 
     <script>
         var mktree = function(tree){
@@ -166,10 +195,12 @@
     function continueExtract(){
        $.getJSON("/extract", function(data, err){
         if(data){
-          $("#info").html("Extracted min "+data['min']+" and rebalanced qh via merge.<br>");
+          $("#info").html("Extracted min "+data['min']+" and rebalanced qh via incremental merge of same-height trees.<br>");
+          housekeeping(data);
+
           if(data['quake_level'] > -1){
 
-            $("#info").append('Quake condition satisfied above level '+data['quake_level'] +' From the bottom. Press quake to cut above this level <br>')
+            $("#info").append('<p>Quake condition satisfied above level '+data['quake_level'] +' from the bottom. Press quake to cut above this level </p>')
 
             if($("#teaching").is(":checked")){
               highlightQuake(data['quake_level'])
@@ -178,7 +209,6 @@
             $("#quakebutton").show()
 
           }
-          housekeeping(data);
           $("#extractcontinuebutton").hide()
 
         }
@@ -192,10 +222,24 @@
       var node = d3.selectAll("g.node");
       var links = d3.selectAll("path.link");
 
-      links.filter(function(d){return d.source.height > level})
+      function height(d){
+        var dist_to_root = 0;
+        var tmp = d;
+        while(tmp.parent){
+          tmp = tmp.parent;
+          dist_to_root++;
+        }
+        return tmp.height - dist_to_root;
+      }
+
+      links.filter(function(d){
+        return height(d.source) > level ;
+      })
           .style("stroke","red");
-      node.filter(function(d){ return d.height > level})
-          .each(function(d){console.log("height satisfied for"); console.log(d);}).style("stroke", "red");
+      node.filter(function(d){ 
+        return height(d) > level ;
+      })
+       .style("stroke", "red");
       
     }
     function decreaseKey(d){
