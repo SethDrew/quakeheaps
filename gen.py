@@ -41,8 +41,6 @@ def read_oldheap():
     with open("qh_old.pickle", "r") as f:
         return pickle.load(f)
 
-
-
 def create_heap(num):
     q = QuakeHeap()
     values = {}
@@ -111,5 +109,10 @@ def run_quake():
     return q.dump(), quake_level
 
 
+def changealpha(newval):
+    q, values = readheap()
+    q.alpha = newval
+    writeheap(q, values)
+    return q.dump(), newval
 
 

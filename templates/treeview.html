@@ -61,15 +61,29 @@
   <div class="container" style="margin-top:100px">
 <div class="row" style="border-bottom:2px solid black; padding-bottom:10px;">
 <div class="col-md-4" id="option">
-    Add Nodes:
+    <div id="addinfo" style="display:none">Adding n items to the quake heap lazily adds n new trees to the heap. </div>
     <input name="addnum" 
            type="number" 
            id="addnum"
            value="15" >
            <input name="updatebutton"
            type="button"
-           value="Update"
+           value="Add"
            onclick="addNodes($('#addnum').val())">
+
+    <br>
+    <div id="alphainfo" style="display:none">Changing alpha affects how often the quake condition occurs. Alpha takes values between 0 and 1, 0 being never and 1 being always. Ideal values seem to be between .5-.8 </div>
+    <input name="changealpha"
+    type="number"
+    id="changealpha"
+    value=".5"
+    step=".01"
+    >
+    <input name="alphabutton"
+           type="button"
+           value="Set Alpha"
+           onclick="changeAlpha($('#changealpha').val())">
+
            <div style="width:50%">Teaching Mode<input type="checkbox" id="teaching" value="Teaching Mode">
     </div>
            <br>
@@ -109,7 +123,7 @@
   </div>
 <div class="col-md-8">
   <div id="quakeinfo" style="display:none;">
-      <p>A quake happens on the heap when there is an alpha violation: for all level counts l_i (number of nodes at level i from the bottom of the tree), if l_i*alpha > l_i+1, then a quake occurs. Choice of alpha is dependent on empirical data.</p>
+      <p>A quake happens on the heap when there is an alpha violation: for all level counts l_i (number of nodes at level i from the bottom of the tree), if l_i < l_i+1 * alpha, then a quake occurs. Choice of alpha is dependent on empirical data.</p>
        <p>When alpha is large, the tree will stay very balanced, but the costly quake operation will happen very often. If alpha is very small, the tree can grow very tall and therefore very space inneficient and take longer to find nodes at the leaves.
         <p>The quake operation removes all nodes above the violation of the quake condition. In the below diagram, all red nodes and red links are deleted leaving the small trees below. Note that no information is lost, but there is work needed to merge the resulting trees to get good search results. Quake does not merge the resulting trees, but they become merged after the first extract min. </p>
     </div>
@@ -152,12 +166,20 @@
     </script>
     <script> 
 
-
+    $('#teaching').change(function() {
+    if (this.checked) {
+      $("#addinfo").show();
+      $("#alphainfo").show();
+    } else {
+      $("#addinfo").hide();
+    }
+});
     function addNodes(num) {
       $.getJSON("/update?num="+num, function(data, err){
         if(data){
           $("#qh").html("");
           mktree(data);
+          $("#info").html("<p>Last Operation: added nodes to heap");
         }
         else{
           console.log(err);
@@ -166,7 +188,20 @@
     }
 
 
-
+    function changeAlpha(newval){
+      $.getJSON("/alpha?newval="+newval, function(data, err){
+        if(data){
+          $("#qh").html("");
+          mktree(data['tree']);
+          $("#info").html("<p>Last Operation: changed alpha to "+data['alpha']+"</p>");
+          $("#changealpha").val(data['alpha']);
+          $("#quakebutton").hide();
+        }
+        else{
+          console.log(err);
+        }
+      });
+    }
     function undo(){
       $.getJSON("/undo", function(data, err){
         if(data){
@@ -218,7 +253,7 @@
     function continueExtract(){
        $.getJSON("/extract", function(data, err){
         if(data){
-          $("#info").html("<p>Last Operation: extracted min "+data['min']+" and rebalanced qh via incremental merge of same-height trees.</p>");
+          $("#info").html("<p>Last Operation: extracted min <font color='red'>"+data['min']+"</font> and rebalanced qh via incremental merge of same-height trees.</p>");
           housekeeping(data);
 
           if(data['quake_level'] > -1){
@@ -287,7 +322,7 @@
       var name = $("#tmpdata").val()
        $.getJSON("/decrease?node="+name, function(data, err){
             if(data){
-              $("#info").html("<p>Decreased key "+name+" to "+data['newkey']+"</p>");
+              $("#info").html("<p>Decreased key <font color='red'>"+name+"</font> to "+data['newkey']+"</p>");
 
               $("#decreasecontinuebutton").hide();
               $("#decreaseinfo").hide()

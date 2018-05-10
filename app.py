@@ -3,7 +3,7 @@ sys.path.append("lib/")
 from flask import Flask
 from flask import render_template, request, jsonify
 
-from gen import create_heap, update_heap, revert_heap, extract_min, decrease_key, run_quake
+from gen import create_heap, update_heap, revert_heap, extract_min, decrease_key, run_quake, changealpha
 
 
 import json
@@ -51,7 +51,11 @@ def decrease():
 @app.route("/undo")
 def undo():    
     return jsonify(revert_heap())
-
+@app.route("/alpha")
+def alpha():
+    newval = float(request.args.get('newval'))
+    dump, alpha = changealpha(newval)
+    return jsonify({'tree':dump['all'], 'alpha': alpha})
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
