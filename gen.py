@@ -27,7 +27,7 @@ def writeheap(q, values):
             with open("qh_old.pickle", "wb") as f2:
                 for line in f1:
                     f2.write(line)
-    except FileNotFoundError:
+    except:
         pass
 
     with open("qh.pickle", 'wb') as f:
