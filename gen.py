@@ -22,10 +22,13 @@ import cPickle as pickle
 
 
 def writeheap(q, values):
-    with open("qh.pickle", "r") as f1:
-        with open("qh_old.pickle", "wb") as f2:
-            for line in f1:
-                f2.write(line)
+    try:
+        with open("qh.pickle", "r") as f1:
+            with open("qh_old.pickle", "wb") as f2:
+                for line in f1:
+                    f2.write(line)
+    except FileNotFoundError:
+        pass
 
     with open("qh.pickle", 'wb') as f:
         pickle.dump((q, values), f)
