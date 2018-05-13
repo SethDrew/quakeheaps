@@ -65,14 +65,14 @@
   <div class="col-md-6">
   <button class="collapsible">Basic Info</button>
   <div id="basicinfo" class="content">
-    <p>Quakeheaps support three operations: <b>extract min</b>, <b>decrease key</b>, and <b>add</b>.</p> 
+    <p>Quake heaps support three operations: <b>extract min</b>, <b>decrease key</b>, and <b>add</b>.</p> 
     <p>To get started: Click <b>add</b>, then use <b>Extract Min</b> to rebalance the trees. Click on nodes to decrease them and unbalance the tree, and then use extract min. If the tree is unbalanced enough through decrease key, a quake condition should occur.</p>
     <p> Use the <b>teaching mode</b> checkbox to get more detailed information about each of the operations as you explore the heap functionalites.</p>
 
   </div>
 <button class="collapsible">Advanced (alpha, quake) </button>
 <div id="advancedinfo" class="content">
-    <p>Changing <b>alpha</b> changes the quakeheaps internal balancing parameter. <b>Alpha</b> is defined as the fraction of the number of nodes between two levels across all trees in the heap. In other words, low <b>alpha</b> garuntees more rebalacing quake operations, which enforces large information gain per level. On the other hand, high <b>alpha</b> allows the tree to be string like and not gain many new nodes each level, which can increase search time and space required. </p>
+    <p><b>Alpha</b> is the quake heap's internal balancing parameter. <b>Alpha</b> is the allowed percent difference between levels before rebalancing occurs. The greater the difference of number of nodes between levels, the more balanced and efficient the heap is. </p> <p>Low <b>alpha</b> garuntees more rebalacing quake operations, which enforces large information gain per level but takes more maintenance. </p> <p>High <b>alpha</b> allows the tree to be string like and not gain many new nodes each level, which can increase search time and space required. </p>
     <p> <b> Quake </b> operation is an internal rebalancing step done by the heap when it's trees become sparse. The heap's quake step has been halted and visualized for teaching purposes. </p> 
   </div>
 </div>
