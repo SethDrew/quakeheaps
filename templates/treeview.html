@@ -72,7 +72,7 @@
   </div>
 <button class="collapsible">Advanced (alpha, quake) </button>
 <div id="advancedinfo" class="content">
-    <p>Changing <b>alpha</b> changes the quakeheaps internal balancing parameter. <b>Alpha</b> is defined as the fraction of the number of nodes between two levels across all trees in the heap. In other words, low <b>alpha</b> requires many more nodes at each level, which means the information gain per level is large. On the other hand, high <b>alpha</b> allows the tree to be string like and not change much each level, which can increase search time and space required. </p>
+    <p>Changing <b>alpha</b> changes the quakeheaps internal balancing parameter. <b>Alpha</b> is defined as the fraction of the number of nodes between two levels across all trees in the heap. In other words, low <b>alpha</b> garuntees more rebalacing quake operations, which enforces large information gain per level. On the other hand, high <b>alpha</b> allows the tree to be string like and not gain many new nodes each level, which can increase search time and space required. </p>
     <p> <b> Quake </b> operation is an internal rebalancing step done by the heap when it's trees become sparse. The heap's quake step has been halted and visualized for teaching purposes. </p> 
   </div>
 </div>
@@ -82,7 +82,7 @@
   <div id="extrainfo">
   <div id="quakeinfo" style="display:none;">
       <p>A quake happens on the heap when there is an alpha violation: for all level counts l_i (number of nodes at level i from the bottom of the tree), if l_i < l_i+1 * alpha, then a quake occurs. Choice of alpha is dependent on empirical data.</p>
-       <p>When alpha is large, the tree will stay very balanced, but the costly quake operation will happen very often. If alpha is very small, the tree can grow very tall and therefore very space inneficient and take longer to find nodes at the leaves.
+       <p>When alpha is large, the tree will stay very balanced, but the costly quake operation will happen very often. If alpha is very small, the tree can grow very tall and therefore very space inneficient and take longer to find nodes at the leaves.</p>
         <p>The quake operation removes all nodes above the violation of the quake condition. In the below diagram, all red nodes and red links are deleted leaving the small trees below. Note that no information is lost, but there is work needed to merge the resulting trees to get good search results. Quake does not merge the resulting trees, but they become merged after the first extract min. </p>
     </div>
 
